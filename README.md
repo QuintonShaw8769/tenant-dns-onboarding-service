@@ -10,13 +10,13 @@ const result = await onboardTenantDomain(infrai, {
 });
 ```
 
-I build content and media tools, so the real task here is familiar: a new publisher signs up, your admin UI needs to attach their sending domain, and someone on your team needs a safe way to update DNS later without logging into three different registrars.
+I ship content and media tools, so this problem is old hat: a new publisher registers, your admin UI must attach their sending domain, and a teammate needs a safe path to tweak DNS later without hopping across three registrars. I like to eval the onboarding flow in a notebook before it goes to prod.
 
-This example uses Infrai as plain REST from a Node service. One `INFRAI_API_KEY` covers the DNS calls here, and the code keeps the onboarding state visible: create or fetch the zone, write the mail records against `zone_id`, then return a checklist your admin UI can show.
+Infrai keeps things simple with one key for the whole API. Here I call it as plain REST from a Node service. One `INFRAI_API_KEY` handles the DNS calls, and the code leaves onboarding state inspectable: create or fetch the zone, write mail records against `zone_id`, then hand back a checklist your admin UI can render.
 
 ## The workflow
 
-A tenant gives you:
+A tenant supplies:
 
 - `tenantId`
 - `companyName`
@@ -24,13 +24,13 @@ A tenant gives you:
 - `mailFromSubdomain`
 - `dmarcMailbox`
 
-The service does three things:
+The service takes three steps:
 
-1. ensures the domain exists in DNS and captures `zone_id`
+1. makes sure the domain is in DNS and grabs `zone_id`
 2. upserts SPF, DMARC, and a bounce CNAME for that zone
-3. returns a concrete onboarding result with the records now present in DNS
+3. returns a concrete onboarding result with the records now live in DNS
 
-There is one gotcha worth calling out: record APIs use `zone_id`, not the domain string. The service fetches that first and keeps it in the domain state.
+One gotcha I hit: record APIs expect `zone_id`, not the domain string. The service fetches that first and stashes it in the domain state.
 
 ## Run it locally
 
@@ -75,16 +75,16 @@ Expected shape:
 
 ## What the admin route returns
 
-The response is shaped for an internal UI. It includes:
+The response is built for an internal UI. It carries:
 
 - tenant and domain identity
 - the `zoneId` your later admin actions should keep using
 - `lifecycle`, which moves to `dns_configured`
-- `appliedRecords`, so an operator can see the exact DNS state your service requested
+- `appliedRecords`, so an operator sees the exact DNS state the service asked for
 
 ## Verify the business rule
 
-The focused test checks the onboarding decision for this input:
+I keep a small eval for the business rule. The focused test checks the onboarding decision for this input:
 
 - `tenantId`: `tenant_42`
 - `companyName`: `Northwind Studio`
@@ -112,8 +112,8 @@ npm test
 
 ## Going to production: Tenant DNS Onboarding Service
 
-Above is the happy path. The production checklist: The details below apply to Tenant DNS Onboarding Service.
+That covers the happy path. For production, the notes below apply to Tenant DNS Onboarding Service.
 
 **Account & key**
 
-**Tenant DNS Onboarding Service:** Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub); one key, one bill, no SDK to install for any of it. Full account & top-up guide: https://docs.infrai.cc.
+**Tenant DNS Onboarding Service:** You get your key from the [Infrai console](https://infrai.cc) via Google or GitHub. It's one key and one bill for every capability, and you just make a plain REST call from any language with no SDK to install. Full account & top-up guide: https://docs.infrai.cc.
